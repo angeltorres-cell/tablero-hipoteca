@@ -138,6 +138,7 @@ export function calculateConversionByDate(
       clicCom = 0,
       listaEspera = 0,
       meInteresa = 0,
+      ofertaEstandar = 0,
       encuestas = 0;
 
     for (const row of rows) {
@@ -149,6 +150,7 @@ export function calculateConversionByDate(
       const intro = introByUUID.get(uuid);
       if (intro?.type_button === "lista_espera") listaEspera++;
       if (intro?.type_button === "me_interesa") meInteresa++;
+      if (intro?.type_button === "oferta_estandar") ofertaEstandar++;
 
       if (filteredEncuestaUUIDs.has(uuid)) encuestas++;
     }
@@ -164,12 +166,14 @@ export function calculateConversionByDate(
       clicCom,
       listaEspera,
       meInteresa,
+      ofertaEstandar,
       encuestas,
       pctExitosos: pctOf(exitosos),
       pctClicWA: pctOf(clicWA),
       pctClicCom: pctOf(clicCom),
       pctListaEspera: pctOf(listaEspera),
       pctMeInteresa: pctOf(meInteresa),
+      pctOfertaEstandar: pctOf(ofertaEstandar),
       pctEncuestas:
         meInteresa > 0
           ? Math.round((encuestas / meInteresa) * 1000) / 10

@@ -84,7 +84,18 @@ export interface ConversionDataPoint {
   pctListaEspera: number;
   pctMeInteresa: number;
   pctEncuestas: number;
+  ofertaEstandar: number;
+  pctOfertaEstandar: number;
 }
 
 export type DateGrouping = "daily" | "weekly" | "monthly";
 export type DataSource = "live" | "demo" | "loading" | "error";
+export type FunnelFilter =
+  | "enviados"
+  | "exitosos"
+  | "abrieron_pagina"
+  | "lista_espera"
+  | "me_interesa"
+  | "encuestas"
+  | "oferta_estandar"
+  | null;
