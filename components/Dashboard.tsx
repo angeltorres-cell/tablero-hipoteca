@@ -73,11 +73,13 @@ export default function Dashboard() {
   const [subSegFilter,  setSubSegFilter]  = useState("all");
   const [activeTab,     setActiveTab]     = useState(0);
   const [funnelFilter,  setFunnelFilter]  = useState<FunnelFilter>(null);
+  const [ownerFilter,   setOwnerFilter]   = useState<string | null>(null);
 
   const loadData = async () => {
     setDataSource("loading");
     setApiStatus("pending");
     setFunnelFilter(null);
+    setOwnerFilter(null);
     try {
       const res  = await fetch("/api/data");
       const json = await res.json();
@@ -141,20 +143,25 @@ export default function Dashboard() {
     [bqData, logsIntro, subSegFilter],
   );
 
-  // Filter detail table based on funnel selection
+  // Filter detail table based on funnel selection and/or owner
   const filteredDetailRows = useMemo(() => {
-    if (!funnelFilter) return detailRows;
-    switch (funnelFilter) {
-      case "enviados":        return detailRows;
-      case "exitosos":        return detailRows.filter(r => r.mensajes_exitosos === 1);
-      case "abrieron_pagina": return detailRows.filter(r => clickedUUIDs.has(r.deal_uuid));
-      case "lista_espera":    return detailRows.filter(r => r.eleccion === "lista_espera");
-      case "me_interesa":     return detailRows.filter(r => r.eleccion === "me_interesa");
-      case "encuestas":       return detailRows.filter(r => encuestaUUIDs.has(r.deal_uuid));
-      case "oferta_estandar": return detailRows.filter(r => r.eleccion === "oferta_estandar");
-      default:                return detailRows;
+    let rows = detailRows;
+    if (funnelFilter) {
+      switch (funnelFilter) {
+        case "exitosos":        rows = rows.filter(r => r.mensajes_exitosos === 1); break;
+        case "abrieron_pagina": rows = rows.filter(r => clickedUUIDs.has(r.deal_uuid)); break;
+        case "lista_espera":    rows = rows.filter(r => r.eleccion === "lista_espera"); break;
+        case "me_interesa":     rows = rows.filter(r => r.eleccion === "me_interesa"); break;
+        case "encuestas":       rows = rows.filter(r => encuestaUUIDs.has(r.deal_uuid)); break;
+        case "oferta_estandar": rows = rows.filter(r => r.eleccion === "oferta_estandar"); break;
+        default: break;
+      }
     }
-  }, [detailRows, funnelFilter, clickedUUIDs, encuestaUUIDs]);
+    if (ownerFilter) {
+      rows = rows.filter(r => r.hubspot_owner_id === ownerFilter);
+    }
+    return rows;
+  }, [detailRows, funnelFilter, ownerFilter, clickedUUIDs, encuestaUUIDs]);
 
   const conversionData = useMemo(
     () => calculateConversionByDate(bqData, logsBoton, logsIntro, encuestaUUIDs, dateGrouping, subSegFilter),
@@ -288,25 +295,38 @@ export default function Dashboard() {
               </div>
 
               {/* Gráfico por comercial */}
-              <OwnerChart rows={detailRows} />
+              <OwnerChart
+                rows={detailRows}
+                selectedOwner={ownerFilter}
+                onOwnerClick={(owner) => setOwnerFilter(owner || null)}
+              />
 
-              {/* Tabla con filtro activo */}
+              {/* Tabla con filtros activos */}
               <div>
-                {funnelFilter && (
-                  <div className="mb-3 flex items-center gap-2">
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                      Filtrando por:{" "}
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {FILTER_LABELS[funnelFilter]}
-                      </span>
-                      {" "}— {filteredDetailRows.length} de {detailRows.length} leads
+                {(funnelFilter || ownerFilter) && (
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Filtrando:
                     </span>
-                    <button
-                      onClick={() => setFunnelFilter(null)}
-                      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                    >
-                      <X className="h-3 w-3" /> Limpiar
-                    </button>
+                    {funnelFilter && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-medium">
+                        {FILTER_LABELS[funnelFilter]}
+                        <button onClick={() => setFunnelFilter(null)} className="ml-0.5 hover:text-indigo-900">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    {ownerFilter && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 font-medium">
+                        {ownerFilter}
+                        <button onClick={() => setOwnerFilter(null)} className="ml-0.5 hover:text-violet-900">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    <span className="text-xs text-zinc-400">
+                      {filteredDetailRows.length} de {detailRows.length} leads
+                    </span>
                   </div>
                 )}
                 <DetailTable rows={filteredDetailRows} />

@@ -14,6 +14,8 @@ import { DetailRow } from "@/lib/types";
 
 interface OwnerChartProps {
   rows: DetailRow[];
+  selectedOwner?: string | null;
+  onOwnerClick?: (ownerFull: string) => void;
 }
 
 const ELECCION_COLORS: Record<string, string> = {
@@ -23,14 +25,9 @@ const ELECCION_COLORS: Record<string, string> = {
   sin_respuesta:   "#D1D5DB",
 };
 
-function shortenOwner(id: string): string {
-  if (!id) return "—";
-  const atIdx = id.indexOf("@");
-  return atIdx > 0 ? id.slice(0, atIdx) : id;
-}
+const STACK_KEYS = ["lista_espera", "me_interesa", "oferta_estandar", "sin_respuesta"] as const;
 
-export default function OwnerChart({ rows }: OwnerChartProps) {
-  // Group by owner, count per elección
+export default function OwnerChart({ rows, selectedOwner, onOwnerClick }: OwnerChartProps) {
   const ownerMap = new Map<string, Record<string, number>>();
   for (const row of rows) {
     const owner = row.hubspot_owner_id || "Sin asignar";
@@ -41,8 +38,7 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
 
   const data = [...ownerMap.entries()]
     .map(([owner, counts]) => ({
-      owner: shortenOwner(owner),
-      ownerFull: owner,
+      owner,                                          // email completo en eje Y
       total: Object.values(counts).reduce((a, b) => a + b, 0),
       lista_espera:    counts.lista_espera    ?? 0,
       me_interesa:     counts.me_interesa     ?? 0,
@@ -55,6 +51,14 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
 
   const barHeight = 36;
   const chartHeight = Math.max(120, data.length * barHeight + 40);
+  const hasSelection = !!selectedOwner;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleClick(chartData: any) {
+    if (!onOwnerClick) return;
+    const owner: string | undefined = chartData?.activePayload?.[0]?.payload?.owner;
+    if (owner) onOwnerClick(owner === selectedOwner ? "" : owner);
+  }
 
   return (
     <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
@@ -62,8 +66,8 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
         Negocios por comercial
       </h3>
       <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
-        Desglose por elección del lead — basado en{" "}
-        <code className="font-mono">hubspot_owner_id</code>
+        {onOwnerClick ? "Haz clic en una barra para filtrar la tabla — " : ""}
+        Desglose por elección del lead
       </p>
 
       <ResponsiveContainer width="100%" height={chartHeight}>
@@ -71,14 +75,16 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
           layout="vertical"
           data={data}
           margin={{ top: 0, right: 48, left: 8, bottom: 0 }}
+          onClick={handleClick}
+          style={{ cursor: onOwnerClick ? "pointer" : "default" }}
         >
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" strokeOpacity={0.6} />
           <XAxis type="number" tick={{ fontSize: 11, fill: "#6b7280" }} allowDecimals={false} />
           <YAxis
             type="category"
             dataKey="owner"
-            width={130}
-            tick={{ fontSize: 11, fill: "#374151" }}
+            width={210}
+            tick={{ fontSize: 10, fill: "#374151" }}
           />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
@@ -93,20 +99,30 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
               return [value, labels[n] ?? n];
             }}
           />
-          {(["lista_espera", "me_interesa", "oferta_estandar", "sin_respuesta"] as const).map((key) => (
+          {STACK_KEYS.map((key, ki) => (
             <Bar
               key={key}
               dataKey={key}
               stackId="a"
               fill={ELECCION_COLORS[key]}
-              radius={key === "sin_respuesta" ? [0, 4, 4, 0] : [0, 0, 0, 0]}
+              radius={ki === STACK_KEYS.length - 1 ? [0, 4, 4, 0] : [0, 0, 0, 0]}
               barSize={22}
-            />
+            >
+              {data.map((entry) => {
+                const dimmed = hasSelection && entry.owner !== selectedOwner;
+                return (
+                  <Cell
+                    key={entry.owner}
+                    fill={ELECCION_COLORS[key]}
+                    opacity={dimmed ? 0.25 : 1}
+                  />
+                );
+              })}
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Legend */}
       <div className="mt-3 flex flex-wrap gap-3">
         {[
           { key: "lista_espera",    label: "Lista espera" },
@@ -115,10 +131,7 @@ export default function OwnerChart({ rows }: OwnerChartProps) {
           { key: "sin_respuesta",   label: "Sin respuesta" },
         ].map(({ key, label }) => (
           <span key={key} className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-sm"
-              style={{ background: ELECCION_COLORS[key] }}
-            />
+            <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: ELECCION_COLORS[key] }} />
             {label}
           </span>
         ))}
