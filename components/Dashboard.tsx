@@ -108,7 +108,7 @@ export default function Dashboard() {
     () => [
       { label: "Mensajes enviados",     value: kpis.enviados,    color: FUNNEL_COLORS[0] },
       { label: "Mensajes exitosos",     value: kpis.exitosos,    color: FUNNEL_COLORS[1] },
-      { label: "Clic al botón",         value: kpis.clicTotal,   color: FUNNEL_COLORS[2] },
+      { label: "Abrieron la página",      value: kpis.clicTotal,   color: FUNNEL_COLORS[2] },
       { label: "Lista de espera",       value: kpis.listaEspera, color: FUNNEL_COLORS[3] },
       { label: "Me interesa",           value: kpis.meInteresa,  color: FUNNEL_COLORS[4] },
       { label: "Encuestas respondidas", value: kpis.encuestas,   color: FUNNEL_COLORS[5] },
@@ -118,10 +118,10 @@ export default function Dashboard() {
 
   const funnelStagesOferta: FunnelStage[] = useMemo(
     () => [
-      { label: "Mensajes enviados",  value: kpis.enviados,       color: "#64748B" },
-      { label: "Mensajes exitosos",  value: kpis.exitosos,       color: "#78909C" },
-      { label: "Clic al botón",      value: kpis.clicTotal,      color: "#90A4AE" },
-      { label: "Oferta estándar",    value: kpis.ofertaEstandar, color: "#EF9F27" },
+      { label: "Mensajes enviados",  value: kpis.enviados,       color: FUNNEL_COLORS[0] },
+      { label: "Mensajes exitosos",  value: kpis.exitosos,       color: FUNNEL_COLORS[1] },
+      { label: "Abrieron la página", value: kpis.clicTotal,      color: FUNNEL_COLORS[2] },
+      { label: "Oferta estándar",    value: kpis.ofertaEstandar, color: FUNNEL_COLORS[3] },
     ],
     [kpis],
   );
