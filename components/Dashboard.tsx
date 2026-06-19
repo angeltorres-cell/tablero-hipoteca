@@ -13,6 +13,7 @@ import {
   LogIntro,
 } from "@/lib/types";
 import {
+  buildDetailRows,
   calculateConversionByDate,
   calculateKPIs,
   filterEncuestasByUUIDs,
@@ -30,6 +31,7 @@ import FilterBar      from "./FilterBar";
 import FunnelChart    from "./FunnelChart";
 import KPICards       from "./KPICards";
 import ConversionChart from "./ConversionChart";
+import DetailTable    from "./DetailTable";
 import SetupScreen    from "./SetupScreen";
 import SurveyChart    from "./SurveyChart";
 import TabNavigation  from "./TabNavigation";
@@ -104,14 +106,29 @@ export default function Dashboard() {
 
   const funnelStages: FunnelStage[] = useMemo(
     () => [
-      { label: "Mensajes enviados",   value: kpis.enviados,    color: FUNNEL_COLORS[0] },
-      { label: "Mensajes exitosos",   value: kpis.exitosos,    color: FUNNEL_COLORS[1] },
-      { label: "Clic al botón",       value: kpis.clicTotal,   color: FUNNEL_COLORS[2] },
-      { label: "Lista de espera",     value: kpis.listaEspera, color: FUNNEL_COLORS[3] },
-      { label: "Me interesa",         value: kpis.meInteresa,  color: FUNNEL_COLORS[4] },
-      { label: "Encuestas respondidas", value: kpis.encuestas, color: FUNNEL_COLORS[5] },
+      { label: "Mensajes enviados",     value: kpis.enviados,    color: FUNNEL_COLORS[0] },
+      { label: "Mensajes exitosos",     value: kpis.exitosos,    color: FUNNEL_COLORS[1] },
+      { label: "Clic al botón",         value: kpis.clicTotal,   color: FUNNEL_COLORS[2] },
+      { label: "Lista de espera",       value: kpis.listaEspera, color: FUNNEL_COLORS[3] },
+      { label: "Me interesa",           value: kpis.meInteresa,  color: FUNNEL_COLORS[4] },
+      { label: "Encuestas respondidas", value: kpis.encuestas,   color: FUNNEL_COLORS[5] },
     ],
     [kpis],
+  );
+
+  const funnelStagesOferta: FunnelStage[] = useMemo(
+    () => [
+      { label: "Mensajes enviados",  value: kpis.enviados,       color: "#64748B" },
+      { label: "Mensajes exitosos",  value: kpis.exitosos,       color: "#78909C" },
+      { label: "Clic al botón",      value: kpis.clicTotal,      color: "#90A4AE" },
+      { label: "Oferta estándar",    value: kpis.ofertaEstandar, color: "#EF9F27" },
+    ],
+    [kpis],
+  );
+
+  const detailRows = useMemo(
+    () => buildDetailRows(bqData, logsIntro, subSegFilter),
+    [bqData, logsIntro, subSegFilter],
   );
 
   const conversionData = useMemo(
@@ -213,11 +230,32 @@ export default function Dashboard() {
         {/* Tab content */}
         <div className="pb-8">
           {activeTab === 0 && (
-            <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
-              <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-6">
-                Funnel de conversión
-              </h2>
-              <FunnelChart stages={funnelStages} />
+            <div className="space-y-6">
+              {/* Dos funnels lado a lado */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+                  <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-1">
+                    Funnel — Lista de espera
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-5">
+                    Leads que se registraron para el nuevo producto
+                  </p>
+                  <FunnelChart stages={funnelStages} />
+                </div>
+
+                <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+                  <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-1">
+                    Funnel — Oferta estándar
+                  </h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-5">
+                    Leads que prefirieron la oferta estándar
+                  </p>
+                  <FunnelChart stages={funnelStagesOferta} />
+                </div>
+              </div>
+
+              {/* Tabla de detalle */}
+              <DetailTable rows={detailRows} />
             </div>
           )}
 

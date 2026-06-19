@@ -29,7 +29,8 @@ var QUERY =
   '  TO_JSON_STRING(w.additional_data) AS additional_data,\n' +
   '  CAST(d.hubspot_owner_id AS STRING) AS hubspot_owner_id,\n' +
   '  d.segmento_seller_mx,\n' +
-  '  d.sub_segmento_seller_mx\n' +
+  '  d.sub_segmento_seller_mx,\n' +
+  '  d.razon_de_venta_usuario_gabi_mx\n' +
   'FROM `sellers-main-prod.mx_rds_staging.habi_notifications_whatsapp_messages` w\n' +
   'LEFT JOIN `sellers-main-prod.hubspot.deals` AS d ON w.nid = d.nid\n' +
   "WHERE template_id = 'envio_oferta_liquidez_mx_angeltorres_12jun26'";

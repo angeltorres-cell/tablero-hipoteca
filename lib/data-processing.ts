@@ -2,6 +2,7 @@ import {
   BigQueryRow,
   ConversionDataPoint,
   DateGrouping,
+  DetailRow,
   KPIs,
   LogBoton,
   LogEncuesta,
@@ -196,4 +197,35 @@ export function filterEncuestasByUUIDs(
   validUUIDs: Set<string>,
 ): LogEncuesta[] {
   return encuestas.filter((r) => validUUIDs.has(r.uuid));
+}
+
+export function buildDetailRows(
+  bqData: BigQueryRow[],
+  logsIntro: LogIntro[],
+  subSegFilter: string,
+): DetailRow[] {
+  const filtered =
+    subSegFilter === "all"
+      ? bqData
+      : bqData.filter((r) => r.sub_segmento_seller_mx === subSegFilter);
+
+  const introByUUID = new Map(
+    deduplicateByUUID(logsIntro).map((r) => [r.uuid, r]),
+  );
+
+  return filtered.map((row) => {
+    const intro = introByUUID.get(row.deal_uuid);
+    return {
+      nid: row.nid,
+      cellphone: row.cellphone,
+      dealname: row.dealname,
+      deal_uuid: row.deal_uuid,
+      mensajes_exitosos: row.mensajes_exitosos,
+      hubspot_owner_id: row.hubspot_owner_id,
+      segmento_seller_mx: row.segmento_seller_mx,
+      sub_segmento_seller_mx: row.sub_segmento_seller_mx,
+      razon_de_venta_usuario_gabi_mx: row.razon_de_venta_usuario_gabi_mx ?? "",
+      eleccion: intro?.type_button ?? "sin_respuesta",
+    };
+  });
 }

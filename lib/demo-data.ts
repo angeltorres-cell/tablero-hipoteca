@@ -31,6 +31,7 @@ export function generateDemoBigQueryData(): BigQueryRow[] {
       hubspot_owner_id: String(100 + (i % 5)),
       segmento_seller_mx: "Hipoteca",
       sub_segmento_seller_mx: SUB_SEGMENTS[i % 3],
+      razon_de_venta_usuario_gabi_mx: ["Tasas altas", "Liquidez", "Cambio de propiedad", "Otro", ""][i % 5],
     });
   }
   return rows;

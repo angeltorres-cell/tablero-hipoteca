@@ -10,6 +10,22 @@ export interface BigQueryRow {
   hubspot_owner_id: string;
   segmento_seller_mx: string;
   sub_segmento_seller_mx: string;
+  razon_de_venta_usuario_gabi_mx: string;
+}
+
+export type Eleccion = "lista_espera" | "oferta_estandar" | "me_interesa" | "sin_respuesta";
+
+export interface DetailRow {
+  nid: string;
+  cellphone: string;
+  dealname: string;
+  deal_uuid: string;
+  mensajes_exitosos: number;
+  hubspot_owner_id: string;
+  segmento_seller_mx: string;
+  sub_segmento_seller_mx: string;
+  razon_de_venta_usuario_gabi_mx: string;
+  eleccion: Eleccion;
 }
 
 export interface LogBoton {
