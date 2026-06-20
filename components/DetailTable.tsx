@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Download } from "lucide-react";
 import { DetailRow, Eleccion } from "@/lib/types";
 
 interface DetailTableProps {
@@ -58,15 +58,48 @@ export default function DetailTable({ rows }: DetailTableProps) {
     return sortDir === "asc" ? cmp : -cmp;
   });
 
+  async function handleDownload() {
+    const { utils, writeFile } = await import("xlsx");
+
+    const excelRows = sorted.map((r) => ({
+      "Nombre":          r.dealname || "",
+      "NID":             r.nid || "",
+      "Teléfono":        r.cellphone || "",
+      "Elección":        ELECCION_LABEL[r.eleccion],
+      "Entregado":       r.mensajes_exitosos === 1 ? "Sí" : "No",
+      "Owner":           r.hubspot_owner_id || "",
+      "Segmento":        r.segmento_seller_mx || "",
+      "Sub-segmento":    r.sub_segmento_seller_mx || "",
+      "Razón de venta":  r.razon_de_venta_usuario_gabi_mx || "",
+      "UUID":            r.deal_uuid || "",
+    }));
+
+    const ws = utils.json_to_sheet(excelRows);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Leads");
+
+    const date = new Date().toISOString().slice(0, 10);
+    writeFile(wb, `detalle_leads_CHP_MX_${date}.xlsx`);
+  }
+
   return (
     <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700">
       <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
         <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
           Detalle por lead
         </h3>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          {rows.length} leads
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            {rows.length} leads
+          </span>
+          <button
+            onClick={handleDownload}
+            className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Descargar Excel
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
