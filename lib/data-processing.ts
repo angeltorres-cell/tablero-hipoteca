@@ -25,6 +25,21 @@ export function deduplicateByUUID<
   });
 }
 
+// Like deduplicateByUUID but for LogBoton: prefers whatsapp source over comercial
+// so a UUID with both sources counts as whatsapp.
+export function deduplicateBotonByUUID(rows: LogBoton[]): LogBoton[] {
+  const byUUID = new Map<string, LogBoton>();
+  for (const row of rows) {
+    const existing = byUUID.get(row.uuid);
+    if (!existing) {
+      byUUID.set(row.uuid, row);
+    } else if (row.source === "whatsapp" && existing.source !== "whatsapp") {
+      byUUID.set(row.uuid, row);
+    }
+  }
+  return [...byUUID.values()];
+}
+
 export function groupDate(dateStr: string, mode: DateGrouping): string {
   // Handle both "YYYY-MM-DDTHH:mm:ss" and "YYYY-MM-DD" formats
   const isoStr = dateStr.replace(" ", "T").split(".")[0];
@@ -60,7 +75,7 @@ export function calculateKPIs(
   const filtered = filterBQ(bqData, subSegFilter);
   const validUUIDs = new Set(filtered.map((r) => r.deal_uuid));
 
-  const dedupBoton = deduplicateByUUID(logsBoton).filter((r) =>
+  const dedupBoton = deduplicateBotonByUUID(logsBoton).filter((r) =>
     validUUIDs.has(r.uuid),
   );
   const dedupIntro = deduplicateByUUID(logsIntro).filter((r) =>
@@ -106,7 +121,7 @@ export function calculateConversionByDate(
   const filtered = filterBQ(bqData, subSegFilter);
   const validUUIDs = new Set(filtered.map((r) => r.deal_uuid));
 
-  const dedupBoton = deduplicateByUUID(logsBoton).filter((r) =>
+  const dedupBoton = deduplicateBotonByUUID(logsBoton).filter((r) =>
     validUUIDs.has(r.uuid),
   );
   const dedupIntro = deduplicateByUUID(logsIntro).filter((r) =>
