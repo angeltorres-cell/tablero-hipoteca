@@ -45,7 +45,8 @@ export default function FunnelChart({ stages, selectedIndex, onStageClick }: Fun
           const x3 = CENTER_X + bottomW / 2;
           const x4 = CENTER_X - bottomW / 2;
           const midY = y + STAGE_HEIGHT / 2;
-          const pct = maxValue > 0 ? Math.round((stage.value / maxValue) * 100) : 0;
+          const prevValue = i === 0 ? stage.value : (stages[i - 1]?.value || 1);
+          const pct = prevValue > 0 ? Math.round((stage.value / prevValue) * 100) : 0;
           const isSelected = selectedIndex === i;
           const isDimmed = hasFilter && !isSelected;
 
