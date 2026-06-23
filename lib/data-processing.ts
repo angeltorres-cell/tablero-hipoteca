@@ -98,7 +98,8 @@ export function calculateKPIs(
   ).length;
 
   return {
-    enviados: filtered.length,
+    ofertados: filtered.length,
+    enviados: filtered.filter((r) => r.template_id !== "").length,
     exitosos: filtered.filter((r) => r.mensajes_exitosos === 1).length,
     clicWA,
     clicCom,
@@ -135,10 +136,10 @@ export function calculateConversionByDate(
   const botonByUUID = new Map(dedupBoton.map((r) => [r.uuid, r]));
   const introByUUID = new Map(dedupIntro.map((r) => [r.uuid, r]));
 
-  // Group BQ rows by date key
+  // Group BQ rows by date key (based on fecha_ofertado)
   const groups = new Map<string, BigQueryRow[]>();
   for (const row of filtered) {
-    const key = groupDate(row.created_at, dateGrouping);
+    const key = groupDate(row.fecha_ofertado, dateGrouping);
     const existing = groups.get(key);
     if (existing) existing.push(row);
     else groups.set(key, [row]);
@@ -147,7 +148,8 @@ export function calculateConversionByDate(
   const result: ConversionDataPoint[] = [];
 
   for (const [date, rows] of groups) {
-    const enviados = rows.length;
+    const ofertados = rows.length;
+    const enviados = rows.filter((r) => r.template_id !== "").length;
     const exitosos = rows.filter((r) => r.mensajes_exitosos === 1).length;
     let clicWA = 0,
       clicCom = 0,
@@ -171,10 +173,11 @@ export function calculateConversionByDate(
     }
 
     const pctOf = (n: number) =>
-      enviados > 0 ? Math.round((n / enviados) * 1000) / 10 : 0;
+      ofertados > 0 ? Math.round((n / ofertados) * 1000) / 10 : 0;
 
     result.push({
       date,
+      ofertados,
       enviados,
       exitosos,
       clicWA,
@@ -183,6 +186,7 @@ export function calculateConversionByDate(
       meInteresa,
       ofertaEstandar,
       encuestas,
+      pctEnviados: pctOf(enviados),
       pctExitosos: pctOf(exitosos),
       pctClicWA: pctOf(clicWA),
       pctClicCom: pctOf(clicCom),

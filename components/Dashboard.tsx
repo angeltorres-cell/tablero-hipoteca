@@ -45,14 +45,15 @@ const FUNNEL_COLORS = ["#3F3D91", "#89C4E8", "#2E7D4F", "#C4B95A", "#C97B8B", "#
 
 // Maps funnel stage index → FunnelFilter key (lista espera funnel)
 const FUNNEL_MAIN_KEYS: FunnelFilter[] = [
-  "enviados", "exitosos", "abrieron_pagina", "lista_espera", "me_interesa", "encuestas",
+  "ofertados", "enviados", "exitosos", "abrieron_pagina", "lista_espera", "me_interesa", "encuestas",
 ];
 // Maps funnel stage index → FunnelFilter key (oferta estándar funnel)
 const FUNNEL_OFERTA_KEYS: FunnelFilter[] = [
-  "enviados", "exitosos", "abrieron_pagina", "oferta_estandar",
+  "ofertados", "enviados", "exitosos", "abrieron_pagina", "oferta_estandar",
 ];
 
 const FILTER_LABELS: Record<NonNullable<FunnelFilter>, string> = {
+  ofertados:       "Ofertados",
   enviados:        "Mensajes enviados",
   exitosos:        "Mensajes exitosos",
   abrieron_pagina: "Abrieron la página",
@@ -122,20 +123,28 @@ export default function Dashboard() {
     [logsBoton, filteredValidUUIDs],
   );
 
+  // Set of UUIDs for which a WhatsApp message was sent (template_id populated)
+  const enviadosUUIDs = useMemo(
+    () => new Set(bqData.filter(r => filteredValidUUIDs.has(r.deal_uuid) && r.template_id !== "").map(r => r.deal_uuid)),
+    [bqData, filteredValidUUIDs],
+  );
+
   const funnelStages: FunnelStage[] = useMemo(() => [
-    { label: "Mensajes enviados",     value: kpis.enviados,    color: FUNNEL_COLORS[0] },
-    { label: "Mensajes exitosos",     value: kpis.exitosos,    color: FUNNEL_COLORS[1] },
-    { label: "Abrieron la página",    value: kpis.clicTotal,   color: FUNNEL_COLORS[2] },
-    { label: "Lista de espera",       value: kpis.listaEspera, color: FUNNEL_COLORS[3] },
-    { label: "Me interesa",           value: kpis.meInteresa,  color: FUNNEL_COLORS[4] },
+    { label: "Ofertados",             value: kpis.ofertados,   color: FUNNEL_COLORS[0] },
+    { label: "Mensajes enviados",     value: kpis.enviados,    color: FUNNEL_COLORS[1] },
+    { label: "Mensajes exitosos",     value: kpis.exitosos,    color: FUNNEL_COLORS[2] },
+    { label: "Abrieron la página",    value: kpis.clicTotal,   color: FUNNEL_COLORS[3] },
+    { label: "Lista de espera",       value: kpis.listaEspera, color: FUNNEL_COLORS[4] },
+    { label: "Me interesa",           value: kpis.meInteresa,  color: FUNNEL_COLORS[5] },
     { label: "Encuestas respondidas", value: kpis.encuestas,   color: FUNNEL_COLORS[5] },
   ], [kpis]);
 
   const funnelStagesOferta: FunnelStage[] = useMemo(() => [
-    { label: "Mensajes enviados",  value: kpis.enviados,       color: FUNNEL_COLORS[0] },
-    { label: "Mensajes exitosos",  value: kpis.exitosos,       color: FUNNEL_COLORS[1] },
-    { label: "Abrieron la página", value: kpis.clicTotal,      color: FUNNEL_COLORS[2] },
-    { label: "Oferta estándar",    value: kpis.ofertaEstandar, color: FUNNEL_COLORS[3] },
+    { label: "Ofertados",          value: kpis.ofertados,      color: FUNNEL_COLORS[0] },
+    { label: "Mensajes enviados",  value: kpis.enviados,       color: FUNNEL_COLORS[1] },
+    { label: "Mensajes exitosos",  value: kpis.exitosos,       color: FUNNEL_COLORS[2] },
+    { label: "Abrieron la página", value: kpis.clicTotal,      color: FUNNEL_COLORS[3] },
+    { label: "Oferta estándar",    value: kpis.ofertaEstandar, color: FUNNEL_COLORS[4] },
   ], [kpis]);
 
   const detailRows = useMemo(
@@ -148,6 +157,8 @@ export default function Dashboard() {
     let rows = detailRows;
     if (funnelFilter) {
       switch (funnelFilter) {
+        case "ofertados":       break; // all rows are ofertados
+        case "enviados":        rows = rows.filter(r => enviadosUUIDs.has(r.deal_uuid)); break;
         case "exitosos":        rows = rows.filter(r => r.mensajes_exitosos === 1); break;
         case "abrieron_pagina": rows = rows.filter(r => clickedUUIDs.has(r.deal_uuid)); break;
         case "lista_espera":    rows = rows.filter(r => r.eleccion === "lista_espera"); break;
@@ -161,7 +172,7 @@ export default function Dashboard() {
       rows = rows.filter(r => r.hubspot_owner_id === ownerFilter);
     }
     return rows;
-  }, [detailRows, funnelFilter, ownerFilter, clickedUUIDs, encuestaUUIDs]);
+  }, [detailRows, funnelFilter, ownerFilter, clickedUUIDs, encuestaUUIDs, enviadosUUIDs]);
 
   const conversionData = useMemo(
     () => calculateConversionByDate(bqData, logsBoton, logsIntro, encuestaUUIDs, dateGrouping, subSegFilter),

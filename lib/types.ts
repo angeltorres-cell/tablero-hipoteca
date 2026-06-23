@@ -1,5 +1,5 @@
 export interface BigQueryRow {
-  created_at: string;
+  fecha_ofertado: string;
   cellphone: string;
   dealname: string;
   nid: string;
@@ -52,6 +52,7 @@ export interface LogEncuesta {
 }
 
 export interface KPIs {
+  ofertados: number;
   enviados: number;
   exitosos: number;
   clicWA: number;
@@ -71,6 +72,7 @@ export interface FunnelStage {
 
 export interface ConversionDataPoint {
   date: string;
+  ofertados: number;
   enviados: number;
   exitosos: number;
   clicWA: number;
@@ -78,6 +80,7 @@ export interface ConversionDataPoint {
   listaEspera: number;
   meInteresa: number;
   encuestas: number;
+  pctEnviados: number;
   pctExitosos: number;
   pctClicWA: number;
   pctClicCom: number;
@@ -91,6 +94,7 @@ export interface ConversionDataPoint {
 export type DateGrouping = "daily" | "weekly" | "monthly";
 export type DataSource = "live" | "demo" | "loading" | "error";
 export type FunnelFilter =
+  | "ofertados"
   | "enviados"
   | "exitosos"
   | "abrieron_pagina"

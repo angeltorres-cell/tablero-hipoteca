@@ -20,11 +20,11 @@ export async function GET() {
     if (json.error) throw new Error(json.error);
 
     // BigQuery devuelve todos los valores como strings.
-    // Convertimos mensajes_exitosos ("1" / "0") al número que esperan los tipos.
+    // mensajes_exitosos viene como "1"/"0" o "" (null para ofertados sin mensaje enviado).
     const bqData: BigQueryRow[] = (json.bq_data ?? []).map(
       (row: Record<string, string>) => ({
         ...row,
-        mensajes_exitosos: Number(row.mensajes_exitosos ?? 0),
+        mensajes_exitosos: row.mensajes_exitosos !== "" ? Number(row.mensajes_exitosos) : 0,
       }),
     );
 

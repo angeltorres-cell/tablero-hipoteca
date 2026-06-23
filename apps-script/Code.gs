@@ -18,22 +18,55 @@ var SPREADSHEET_ID = '12y3HLeV6s30yoFteZsuwKdCK-Q_C8NxzgujBhA-mqD8';
 var BQ_PROJECT     = 'sellers-main-prod';
 
 var QUERY =
+  'WITH ofertados AS (\n' +
+  '  SELECT\n' +
+  '    nid,\n' +
+  '    TIMESTAMP_SUB(fecha, INTERVAL 5 HOUR) AS fecha_ofertado,\n' +
+  '    dealname,\n' +
+  '    sub_segmento_seller_mx,\n' +
+  '    d.deal_uuid\n' +
+  '  FROM `sellers-main-prod.hubspot.historical` AS h\n' +
+  '  LEFT JOIN `sellers-main-prod.hubspot.deals` AS d USING (nid)\n' +
+  "  WHERE propiedad = 'dealstage'\n" +
+  "    AND valor = '1066441580'\n" +
+  "    AND fecha >= '2026-06-17'\n" +
+  '    AND sub_segmento_seller_mx IN (\n' +
+  "      'Cambio de Casa - Sin destino definido, explorando opciones',\n" +
+  "      'Cambio de Casa - Destino definido, mudanza pendiente',\n" +
+  "      'Cambio laboral / ciudad / país',\n" +
+  "      'Cambio de Casa - Mudados'\n" +
+  '    )\n' +
+  '),\n' +
+  'enviados AS (\n' +
+  '  SELECT\n' +
+  '    w.cellphone,\n' +
+  '    CAST(w.nid AS STRING) AS nid,\n' +
+  "    CASE WHEN w.message_status IN ('delivered', 'read') THEN 1 ELSE 0 END AS mensajes_exitosos,\n" +
+  '    w.template_id,\n' +
+  '    TO_JSON_STRING(w.additional_data) AS additional_data,\n' +
+  '    CAST(d.hubspot_owner_id AS STRING) AS hubspot_owner_id,\n' +
+  '    d.segmento_seller_mx,\n' +
+  '    d.razon_de_venta_usuario_gabi_mx\n' +
+  '  FROM `sellers-main-prod.mx_rds_staging.habi_notifications_whatsapp_messages` AS w\n' +
+  '  LEFT JOIN `sellers-main-prod.hubspot.deals` AS d\n' +
+  '    ON CAST(w.nid AS STRING) = CAST(d.nid AS STRING)\n' +
+  "  WHERE w.template_id = 'envio_oferta_liquidez_mx_angeltorres_12jun26'\n" +
+  ')\n' +
   'SELECT\n' +
-  "  FORMAT_TIMESTAMP('%Y-%m-%dT%H:%M:%S', w.created_at) AS created_at,\n" +
-  '  w.cellphone,\n' +
-  '  d.dealname,\n' +
-  '  CAST(w.nid AS STRING) AS nid,\n' +
-  '  d.deal_uuid,\n' +
-  "  (CASE WHEN message_status IN ('delivered', 'read') THEN 1 ELSE 0 END) AS mensajes_exitosos,\n" +
-  '  template_id,\n' +
-  '  TO_JSON_STRING(w.additional_data) AS additional_data,\n' +
-  '  CAST(d.hubspot_owner_id AS STRING) AS hubspot_owner_id,\n' +
-  '  d.segmento_seller_mx,\n' +
-  '  d.sub_segmento_seller_mx,\n' +
-  '  d.razon_de_venta_usuario_gabi_mx\n' +
-  'FROM `sellers-main-prod.mx_rds_staging.habi_notifications_whatsapp_messages` w\n' +
-  'LEFT JOIN `sellers-main-prod.hubspot.deals` AS d ON w.nid = d.nid\n' +
-  "WHERE template_id = 'envio_oferta_liquidez_mx_angeltorres_12jun26'";
+  "  FORMAT_TIMESTAMP('%Y-%m-%dT%H:%M:%S', o.fecha_ofertado) AS fecha_ofertado,\n" +
+  '  e.cellphone,\n' +
+  '  o.dealname,\n' +
+  '  CAST(o.nid AS STRING) AS nid,\n' +
+  '  o.deal_uuid,\n' +
+  '  e.mensajes_exitosos,\n' +
+  '  e.template_id,\n' +
+  '  e.additional_data,\n' +
+  '  e.hubspot_owner_id,\n' +
+  '  e.segmento_seller_mx,\n' +
+  '  o.sub_segmento_seller_mx,\n' +
+  '  e.razon_de_venta_usuario_gabi_mx\n' +
+  'FROM ofertados AS o\n' +
+  'LEFT JOIN enviados AS e ON CAST(o.nid AS STRING) = e.nid';
 
 
 // ── Entry point ──────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ const DAYS = [
 
 export function generateDemoBigQueryData(): BigQueryRow[] {
   const rows: BigQueryRow[] = [];
+  // 150 ofertados that were also sent a WhatsApp message
   for (let i = 0; i < 150; i++) {
     const uuid = `uuid-${String(i).padStart(4, "0")}`;
     const day = DAYS[i % DAYS.length];
@@ -20,7 +21,7 @@ export function generateDemoBigQueryData(): BigQueryRow[] {
     const minute = String((i * 7) % 60).padStart(2, "0");
     const second = String((i * 13) % 60).padStart(2, "0");
     rows.push({
-      created_at: `${day}T${hour}:${minute}:${second}`,
+      fecha_ofertado: `${day}T${hour}:${minute}:${second}`,
       cellphone: `521${String(5500000000 + i)}`,
       dealname: `Deal ${uuid}`,
       nid: String(1000000 + i),
@@ -32,6 +33,28 @@ export function generateDemoBigQueryData(): BigQueryRow[] {
       segmento_seller_mx: "Hipoteca",
       sub_segmento_seller_mx: SUB_SEGMENTS[i % 3],
       razon_de_venta_usuario_gabi_mx: ["Tasas altas", "Liquidez", "Cambio de propiedad", "Otro", ""][i % 5],
+    });
+  }
+  // 20 additional ofertados that were NOT sent a message (no template_id)
+  for (let i = 150; i < 170; i++) {
+    const uuid = `uuid-${String(i).padStart(4, "0")}`;
+    const day = DAYS[i % DAYS.length];
+    const hour = String(8 + (i % 10)).padStart(2, "0");
+    const minute = String((i * 7) % 60).padStart(2, "0");
+    const second = String((i * 13) % 60).padStart(2, "0");
+    rows.push({
+      fecha_ofertado: `${day}T${hour}:${minute}:${second}`,
+      cellphone: "",
+      dealname: `Deal ${uuid}`,
+      nid: String(1000000 + i),
+      deal_uuid: uuid,
+      mensajes_exitosos: 0,
+      template_id: "",
+      additional_data: "",
+      hubspot_owner_id: "",
+      segmento_seller_mx: "",
+      sub_segmento_seller_mx: SUB_SEGMENTS[i % 3],
+      razon_de_venta_usuario_gabi_mx: "",
     });
   }
   return rows;
