@@ -2,8 +2,7 @@
 
 const TABS = [
   "Funnel",
-  "Conversión WhatsApp",
-  "Conversión comercial",
+  "Conversión",
   "Interés → Encuesta",
   "Respuestas encuestas",
 ];

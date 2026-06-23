@@ -31,6 +31,8 @@ const COLUMNS: { key: SortKey; label: string; truncate?: boolean }[] = [
   { key: "cellphone",                      label: "Teléfono" },
   { key: "eleccion",                       label: "Elección" },
   { key: "mensajes_exitosos",              label: "Entregado" },
+  { key: "template_id",                    label: "Plantilla",      truncate: true },
+  { key: "abrieron_pagina",               label: "Abrió página" },
   { key: "hubspot_owner_id",               label: "Owner" },
   { key: "segmento_seller_mx",             label: "Segmento" },
   { key: "sub_segmento_seller_mx",         label: "Sub-segmento",  truncate: true },
@@ -67,6 +69,8 @@ export default function DetailTable({ rows }: DetailTableProps) {
       "Teléfono":        r.cellphone || "",
       "Elección":        ELECCION_LABEL[r.eleccion],
       "Entregado":       r.mensajes_exitosos === 1 ? "Sí" : "No",
+      "Plantilla":       r.template_id || "",
+      "Abrió página":    r.abrieron_pagina ? (r.source_boton === "whatsapp" ? "Sí (WhatsApp)" : "Sí (Comercial)") : "No",
       "Owner":           r.hubspot_owner_id || "",
       "Segmento":        r.segmento_seller_mx || "",
       "Sub-segmento":    r.sub_segmento_seller_mx || "",
@@ -153,6 +157,24 @@ export default function DetailTable({ rows }: DetailTableProps) {
                     </span>
                   ) : (
                     <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400">
+                      No
+                    </span>
+                  )}
+                </td>
+                <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400 font-mono text-xs max-w-[200px] truncate">
+                  {row.template_id || "—"}
+                </td>
+                <td className="px-3 py-2.5 whitespace-nowrap">
+                  {row.abrieron_pagina ? (
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                      row.source_boton === "whatsapp"
+                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                    }`}>
+                      {row.source_boton === "whatsapp" ? "Sí (WA)" : "Sí (Com)"}
+                    </span>
+                  ) : (
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                       No
                     </span>
                   )}

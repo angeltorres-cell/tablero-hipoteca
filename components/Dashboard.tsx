@@ -73,8 +73,9 @@ export default function Dashboard() {
   const [dateGrouping,  setDateGrouping]  = useState<DateGrouping>("daily");
   const [subSegFilter,  setSubSegFilter]  = useState("all");
   const [activeTab,     setActiveTab]     = useState(0);
-  const [funnelFilter,  setFunnelFilter]  = useState<FunnelFilter>(null);
-  const [ownerFilter,   setOwnerFilter]   = useState<string | null>(null);
+  const [funnelFilter,       setFunnelFilter]       = useState<FunnelFilter>(null);
+  const [ownerFilter,        setOwnerFilter]        = useState<string | null>(null);
+  const [conversionChannel,  setConversionChannel]  = useState<"whatsapp" | "comercial">("whatsapp");
 
   const loadData = async () => {
     setDataSource("loading");
@@ -148,8 +149,8 @@ export default function Dashboard() {
   ], [kpis]);
 
   const detailRows = useMemo(
-    () => buildDetailRows(bqData, logsIntro, subSegFilter),
-    [bqData, logsIntro, subSegFilter],
+    () => buildDetailRows(bqData, logsIntro, logsBoton, subSegFilter),
+    [bqData, logsIntro, logsBoton, subSegFilter],
   );
 
   // Filter detail table based on funnel selection and/or owner
@@ -345,68 +346,100 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* ── Tab 1: Conversión WhatsApp ────────────────────────────────── */}
+          {/* ── Tab 1: Conversión (WhatsApp / Comercial) ─────────────────── */}
           {activeTab === 1 && (
             <div className="space-y-6">
-              <ConversionChart
-                data={conversionData}
-                title="Conversión Lista de espera — WhatsApp"
-                subtitle="Leads que abrieron la página vía WhatsApp y se registraron en lista de espera"
-                bars={[
-                  { dataKey: "enviados",    name: "Enviados",     color: "#378ADD" },
-                  { dataKey: "exitosos",    name: "Exitosos",     color: "#1D9E75" },
-                  { dataKey: "clicWA",      name: "Abrieron (WA)", color: "#7F77DD" },
-                  { dataKey: "listaEspera", name: "Lista espera", color: "#D85A30" },
-                ]}
-                line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
-              />
-              <ConversionChart
-                data={conversionData}
-                title="Conversión Oferta estándar — WhatsApp"
-                subtitle="Leads que abrieron la página vía WhatsApp y eligieron la oferta estándar"
-                bars={[
-                  { dataKey: "enviados",       name: "Enviados",       color: "#378ADD" },
-                  { dataKey: "exitosos",       name: "Exitosos",       color: "#1D9E75" },
-                  { dataKey: "clicWA",         name: "Abrieron (WA)",  color: "#7F77DD" },
-                  { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#EF9F27" },
-                ]}
-                line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
-              />
+              {/* Selector de canal */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Canal:</span>
+                <div className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                  <button
+                    onClick={() => setConversionChannel("whatsapp")}
+                    className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                      conversionChannel === "whatsapp"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    WhatsApp
+                  </button>
+                  <button
+                    onClick={() => setConversionChannel("comercial")}
+                    className={`px-4 py-1.5 text-sm font-medium transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                      conversionChannel === "comercial"
+                        ? "bg-amber-500 text-white"
+                        : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    Comercial
+                  </button>
+                </div>
+              </div>
+
+              {conversionChannel === "whatsapp" ? (
+                <>
+                  <ConversionChart
+                    data={conversionData}
+                    title="Conversión Lista de espera — WhatsApp"
+                    subtitle="Leads que abrieron la página vía WhatsApp y se registraron en lista de espera"
+                    bars={[
+                      { dataKey: "ofertados",   name: "Ofertados",    color: "#3F3D91" },
+                      { dataKey: "enviados",    name: "Enviados",     color: "#378ADD" },
+                      { dataKey: "exitosos",    name: "Exitosos",     color: "#1D9E75" },
+                      { dataKey: "clicWA",      name: "Abrieron (WA)", color: "#7F77DD" },
+                      { dataKey: "listaEspera", name: "Lista espera", color: "#D85A30" },
+                    ]}
+                    line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
+                  />
+                  <ConversionChart
+                    data={conversionData}
+                    title="Conversión Oferta estándar — WhatsApp"
+                    subtitle="Leads que abrieron la página vía WhatsApp y eligieron la oferta estándar"
+                    bars={[
+                      { dataKey: "ofertados",      name: "Ofertados",      color: "#3F3D91" },
+                      { dataKey: "enviados",       name: "Enviados",       color: "#378ADD" },
+                      { dataKey: "exitosos",       name: "Exitosos",       color: "#1D9E75" },
+                      { dataKey: "clicWA",         name: "Abrieron (WA)",  color: "#7F77DD" },
+                      { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#EF9F27" },
+                    ]}
+                    line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
+                  />
+                </>
+              ) : (
+                <>
+                  <ConversionChart
+                    data={conversionData}
+                    title="Conversión Lista de espera — Comercial"
+                    subtitle="Leads que abrieron la página vía link comercial y se registraron en lista de espera"
+                    bars={[
+                      { dataKey: "ofertados",   name: "Ofertados",      color: "#3F3D91" },
+                      { dataKey: "enviados",    name: "Enviados",       color: "#378ADD" },
+                      { dataKey: "exitosos",    name: "Exitosos",       color: "#1D9E75" },
+                      { dataKey: "clicCom",     name: "Abrieron (Com)", color: "#EF9F27" },
+                      { dataKey: "listaEspera", name: "Lista espera",   color: "#D85A30" },
+                    ]}
+                    line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
+                  />
+                  <ConversionChart
+                    data={conversionData}
+                    title="Conversión Oferta estándar — Comercial"
+                    subtitle="Leads que abrieron la página vía link comercial y eligieron la oferta estándar"
+                    bars={[
+                      { dataKey: "ofertados",      name: "Ofertados",      color: "#3F3D91" },
+                      { dataKey: "enviados",       name: "Enviados",       color: "#378ADD" },
+                      { dataKey: "exitosos",       name: "Exitosos",       color: "#1D9E75" },
+                      { dataKey: "clicCom",        name: "Abrieron (Com)", color: "#EF9F27" },
+                      { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#C97B8B" },
+                    ]}
+                    line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
+                  />
+                </>
+              )}
             </div>
           )}
 
-          {/* ── Tab 2: Conversión Comercial ───────────────────────────────── */}
+          {/* ── Tab 2: Me interesa → Encuestas ───────────────────────────── */}
           {activeTab === 2 && (
-            <div className="space-y-6">
-              <ConversionChart
-                data={conversionData}
-                title="Conversión Lista de espera — Comercial"
-                subtitle="Leads que abrieron la página vía link comercial y se registraron en lista de espera"
-                bars={[
-                  { dataKey: "enviados",    name: "Enviados",        color: "#378ADD" },
-                  { dataKey: "exitosos",    name: "Exitosos",        color: "#1D9E75" },
-                  { dataKey: "clicCom",     name: "Abrieron (Com)",  color: "#EF9F27" },
-                  { dataKey: "listaEspera", name: "Lista espera",    color: "#D85A30" },
-                ]}
-                line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
-              />
-              <ConversionChart
-                data={conversionData}
-                title="Conversión Oferta estándar — Comercial"
-                subtitle="Leads que abrieron la página vía link comercial y eligieron la oferta estándar"
-                bars={[
-                  { dataKey: "enviados",       name: "Enviados",        color: "#378ADD" },
-                  { dataKey: "exitosos",       name: "Exitosos",        color: "#1D9E75" },
-                  { dataKey: "clicCom",        name: "Abrieron (Com)",  color: "#EF9F27" },
-                  { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#C97B8B" },
-                ]}
-                line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
-              />
-            </div>
-          )}
-
-          {/* ── Tab 3: Me interesa → Encuestas ───────────────────────────── */}
-          {activeTab === 3 && (
             <ConversionChart
               data={conversionData}
               title="Me interesa → Encuestas"
@@ -419,8 +452,8 @@ export default function Dashboard() {
             />
           )}
 
-          {/* ── Tab 4: Respuestas encuestas ───────────────────────────────── */}
-          {activeTab === 4 && (
+          {/* ── Tab 3: Respuestas encuestas ───────────────────────────────── */}
+          {activeTab === 3 && (
             <div>
               <div className="mb-4">
                 <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">

@@ -225,6 +225,7 @@ export function filterEncuestasByUUIDs(
 export function buildDetailRows(
   bqData: BigQueryRow[],
   logsIntro: LogIntro[],
+  logsBoton: LogBoton[],
   subSegFilter: string,
 ): DetailRow[] {
   const filtered =
@@ -235,15 +236,22 @@ export function buildDetailRows(
   const introByUUID = new Map(
     deduplicateByUUID(logsIntro).map((r) => [r.uuid, r]),
   );
+  const botonByUUID = new Map(
+    deduplicateBotonByUUID(logsBoton).map((r) => [r.uuid, r]),
+  );
 
   return filtered.map((row) => {
     const intro = introByUUID.get(row.deal_uuid);
+    const boton = botonByUUID.get(row.deal_uuid);
     return {
       nid: row.nid,
       cellphone: row.cellphone,
       dealname: row.dealname,
       deal_uuid: row.deal_uuid,
+      template_id: row.template_id,
       mensajes_exitosos: row.mensajes_exitosos,
+      abrieron_pagina: boton !== undefined,
+      source_boton: boton?.source ?? null,
       hubspot_owner_id: row.hubspot_owner_id,
       segmento_seller_mx: row.segmento_seller_mx,
       sub_segmento_seller_mx: row.sub_segmento_seller_mx,

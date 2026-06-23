@@ -20,7 +20,10 @@ export interface DetailRow {
   cellphone: string;
   dealname: string;
   deal_uuid: string;
+  template_id: string;
   mensajes_exitosos: number;
+  abrieron_pagina: boolean;
+  source_boton: "whatsapp" | "comercial" | null;
   hubspot_owner_id: string;
   segmento_seller_mx: string;
   sub_segmento_seller_mx: string;
