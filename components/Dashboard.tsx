@@ -389,7 +389,10 @@ export default function Dashboard() {
                       { dataKey: "clicWA",      name: "Abrieron (WA)", color: "#7F77DD" },
                       { dataKey: "listaEspera", name: "Lista espera", color: "#D85A30" },
                     ]}
-                    line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
+                    lines={[
+                      { dataKey: "pctClicWA",       name: "% Abrieron página (WA)", color: "#7F77DD", dashed: true },
+                      { dataKey: "pctListaEspera",  name: "% Lista espera",         color: "#E24B4A" },
+                    ]}
                   />
                   <ConversionChart
                     data={conversionData}
@@ -402,7 +405,10 @@ export default function Dashboard() {
                       { dataKey: "clicWA",         name: "Abrieron (WA)",  color: "#7F77DD" },
                       { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#EF9F27" },
                     ]}
-                    line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
+                    lines={[
+                      { dataKey: "pctClicWA",         name: "% Abrieron página (WA)", color: "#7F77DD", dashed: true },
+                      { dataKey: "pctOfertaEstandar", name: "% Oferta estándar",       color: "#E24B4A" },
+                    ]}
                   />
                 </>
               ) : (
@@ -418,7 +424,10 @@ export default function Dashboard() {
                       { dataKey: "clicCom",     name: "Abrieron (Com)", color: "#EF9F27" },
                       { dataKey: "listaEspera", name: "Lista espera",   color: "#D85A30" },
                     ]}
-                    line={{ dataKey: "pctListaEspera", name: "% Lista espera", color: "#E24B4A" }}
+                    lines={[
+                      { dataKey: "pctClicCom",      name: "% Abrieron página (Com)", color: "#EF9F27", dashed: true },
+                      { dataKey: "pctListaEspera",  name: "% Lista espera",           color: "#E24B4A" },
+                    ]}
                   />
                   <ConversionChart
                     data={conversionData}
@@ -431,7 +440,10 @@ export default function Dashboard() {
                       { dataKey: "clicCom",        name: "Abrieron (Com)", color: "#EF9F27" },
                       { dataKey: "ofertaEstandar", name: "Oferta estándar", color: "#C97B8B" },
                     ]}
-                    line={{ dataKey: "pctOfertaEstandar", name: "% Oferta estándar", color: "#E24B4A" }}
+                    lines={[
+                      { dataKey: "pctClicCom",        name: "% Abrieron página (Com)", color: "#EF9F27", dashed: true },
+                      { dataKey: "pctOfertaEstandar", name: "% Oferta estándar",        color: "#E24B4A" },
+                    ]}
                   />
                 </>
               )}
@@ -448,7 +460,9 @@ export default function Dashboard() {
                 { dataKey: "meInteresa", name: "Me interesa", color: "#EF9F27" },
                 { dataKey: "encuestas",  name: "Encuestas",   color: "#D4537E" },
               ]}
-              line={{ dataKey: "pctEncuestas", name: "% Encuestas vs Me interesa", color: "#1D9E75" }}
+              lines={[
+                { dataKey: "pctEncuestas", name: "% Encuestas vs Me interesa", color: "#1D9E75" },
+              ]}
             />
           )}
 

@@ -23,12 +23,13 @@ interface LineConfig {
   dataKey: keyof ConversionDataPoint;
   name: string;
   color: string;
+  dashed?: boolean;
 }
 
 interface ConversionChartProps {
   data: ConversionDataPoint[];
   bars: BarConfig[];
-  line: LineConfig;
+  lines: LineConfig[];
   title: string;
   subtitle?: string;
 }
@@ -36,7 +37,7 @@ interface ConversionChartProps {
 export default function ConversionChart({
   data,
   bars,
-  line,
+  lines,
   title,
   subtitle,
 }: ConversionChartProps) {
@@ -107,16 +108,28 @@ export default function ConversionChart({
                 barSize={18}
               />
             ))}
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey={line.dataKey}
-              name={line.name}
-              stroke={line.color}
-              strokeWidth={2}
-              dot={{ r: 3, fill: line.color }}
-              activeDot={{ r: 5 }}
-            />
+            {lines.map((l) => (
+              <Line
+                key={l.dataKey}
+                yAxisId="right"
+                type="monotone"
+                dataKey={l.dataKey}
+                name={l.name}
+                stroke={l.color}
+                strokeWidth={2}
+                strokeDasharray={l.dashed ? "5 3" : undefined}
+                dot={{ r: 3, fill: l.color }}
+                activeDot={{ r: 5 }}
+                label={{
+                  position: "top",
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter: (v: any) => (v != null ? `${v}%` : ""),
+                  fontSize: 10,
+                  fill: l.color,
+                  fontWeight: 600,
+                }}
+              />
+            ))}
           </ComposedChart>
         </ResponsiveContainer>
       )}
