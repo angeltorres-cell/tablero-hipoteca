@@ -474,8 +474,7 @@ export default function Dashboard() {
                   Respuestas de encuestas
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  Solo preguntas de selección múltiple —{" "}
-                  {new Set(filteredEncuestas.map(r => r.uuid)).size} respondentes
+                  Distribución de respuestas por pregunta — solo leads ofertados
                 </p>
               </div>
               <SurveyChart encuestas={filteredEncuestas} />
