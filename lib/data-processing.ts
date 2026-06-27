@@ -78,21 +78,23 @@ export function calculateKPIs(
   const dedupBoton = deduplicateBotonByUUID(logsBoton).filter((r) =>
     validUUIDs.has(r.uuid),
   );
-  const dedupIntro = deduplicateByUUID(logsIntro).filter((r) =>
-    validUUIDs.has(r.uuid),
-  );
+
+  // Count unique UUIDs per type_button independently: a UUID can appear with
+  // different type_buttons at different times, so we must not deduplicate the
+  // whole intro list before splitting — that would drop later-clicked buttons.
+  const introFiltered = logsIntro.filter((r) => validUUIDs.has(r.uuid));
+  const listaEspera = new Set(
+    introFiltered.filter((r) => r.type_button === "lista_espera").map((r) => r.uuid),
+  ).size;
+  const meInteresa = new Set(
+    introFiltered.filter((r) => r.type_button === "me_interesa").map((r) => r.uuid),
+  ).size;
+  const ofertaEstandar = new Set(
+    introFiltered.filter((r) => r.type_button === "oferta_estandar").map((r) => r.uuid),
+  ).size;
 
   const clicWA = dedupBoton.filter((r) => r.source === "whatsapp").length;
   const clicCom = dedupBoton.filter((r) => r.source === "comercial").length;
-  const listaEspera = dedupIntro.filter(
-    (r) => r.type_button === "lista_espera",
-  ).length;
-  const meInteresa = dedupIntro.filter(
-    (r) => r.type_button === "me_interesa",
-  ).length;
-  const ofertaEstandar = dedupIntro.filter(
-    (r) => r.type_button === "oferta_estandar",
-  ).length;
   const encuestas = [...encuestaUUIDs].filter((uuid) =>
     validUUIDs.has(uuid),
   ).length;
@@ -125,16 +127,25 @@ export function calculateConversionByDate(
   const dedupBoton = deduplicateBotonByUUID(logsBoton).filter((r) =>
     validUUIDs.has(r.uuid),
   );
-  const dedupIntro = deduplicateByUUID(logsIntro).filter((r) =>
-    validUUIDs.has(r.uuid),
-  );
   const filteredEncuestaUUIDs = new Set(
     [...encuestaUUIDs].filter((uuid) => validUUIDs.has(uuid)),
   );
 
-  // Build maps for O(1) lookup
+  // Build per-type UUID sets for intro logs so a UUID can count in multiple
+  // type_buttons if the user clicked different buttons at different times.
+  const introFiltered = logsIntro.filter((r) => validUUIDs.has(r.uuid));
+  const listaEsperaUUIDs = new Set(
+    introFiltered.filter((r) => r.type_button === "lista_espera").map((r) => r.uuid),
+  );
+  const meInteresaUUIDs = new Set(
+    introFiltered.filter((r) => r.type_button === "me_interesa").map((r) => r.uuid),
+  );
+  const ofertaEstandarUUIDs = new Set(
+    introFiltered.filter((r) => r.type_button === "oferta_estandar").map((r) => r.uuid),
+  );
+
+  // Build map for O(1) lookup
   const botonByUUID = new Map(dedupBoton.map((r) => [r.uuid, r]));
-  const introByUUID = new Map(dedupIntro.map((r) => [r.uuid, r]));
 
   // Group BQ rows by date key (based on fecha_ofertado)
   const groups = new Map<string, BigQueryRow[]>();
@@ -164,10 +175,9 @@ export function calculateConversionByDate(
       if (boton?.source === "whatsapp") clicWA++;
       if (boton?.source === "comercial") clicCom++;
 
-      const intro = introByUUID.get(uuid);
-      if (intro?.type_button === "lista_espera") listaEspera++;
-      if (intro?.type_button === "me_interesa") meInteresa++;
-      if (intro?.type_button === "oferta_estandar") ofertaEstandar++;
+      if (listaEsperaUUIDs.has(uuid)) listaEspera++;
+      if (meInteresaUUIDs.has(uuid)) meInteresa++;
+      if (ofertaEstandarUUIDs.has(uuid)) ofertaEstandar++;
 
       if (filteredEncuestaUUIDs.has(uuid)) encuestas++;
     }
