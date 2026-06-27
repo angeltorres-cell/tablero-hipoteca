@@ -26,9 +26,7 @@ const ANSWER_COLORS = [
 ];
 
 export default function SurveyChart({ encuestas }: SurveyChartProps) {
-  const mcRows = encuestas.filter((r) => r.question_type === "multiple_choice");
-
-  if (!mcRows.length) {
+  if (!encuestas.length) {
     return (
       <div className="bg-white dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6 text-center text-sm text-zinc-400">
         Sin respuestas de encuesta disponibles
@@ -38,7 +36,7 @@ export default function SurveyChart({ encuestas }: SurveyChartProps) {
 
   // Group by question
   const grouped = new Map<string, Map<string, number>>();
-  for (const row of mcRows) {
+  for (const row of encuestas) {
     if (!grouped.has(row.question)) grouped.set(row.question, new Map());
     const ansMap = grouped.get(row.question)!;
     ansMap.set(row.answer, (ansMap.get(row.answer) ?? 0) + 1);
