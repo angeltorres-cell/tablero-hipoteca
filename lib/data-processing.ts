@@ -258,6 +258,7 @@ export function buildDetailRows(
       cellphone: row.cellphone,
       dealname: row.dealname,
       deal_uuid: row.deal_uuid,
+      fecha_ofertado: row.fecha_ofertado,
       template_id: row.template_id,
       mensajes_exitosos: row.mensajes_exitosos,
       abrieron_pagina: boton !== undefined,

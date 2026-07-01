@@ -74,14 +74,16 @@ export default function Dashboard() {
   const [subSegFilter,  setSubSegFilter]  = useState("all");
   const [activeTab,     setActiveTab]     = useState(0);
   const [funnelFilter,       setFunnelFilter]       = useState<FunnelFilter>(null);
-  const [ownerFilter,        setOwnerFilter]        = useState<string | null>(null);
+  const [leaderBarUUIDs,     setLeaderBarUUIDs]     = useState<Set<string> | null>(null);
+  const [leaderBarLabel,     setLeaderBarLabel]     = useState<string>("");
   const [conversionChannel,  setConversionChannel]  = useState<"whatsapp" | "comercial">("whatsapp");
 
   const loadData = async () => {
     setDataSource("loading");
     setApiStatus("pending");
     setFunnelFilter(null);
-    setOwnerFilter(null);
+    setLeaderBarUUIDs(null);
+    setLeaderBarLabel("");
     try {
       const res  = await fetch("/api/data");
       const json = await res.json();
@@ -169,11 +171,11 @@ export default function Dashboard() {
         default: break;
       }
     }
-    if (ownerFilter) {
-      rows = rows.filter(r => r.hubspot_owner_id === ownerFilter);
+    if (leaderBarUUIDs) {
+      rows = rows.filter(r => leaderBarUUIDs.has(r.deal_uuid));
     }
     return rows;
-  }, [detailRows, funnelFilter, ownerFilter, clickedUUIDs, encuestaUUIDs, enviadosUUIDs]);
+  }, [detailRows, funnelFilter, leaderBarUUIDs, clickedUUIDs, encuestaUUIDs, enviadosUUIDs]);
 
   const conversionData = useMemo(
     () => calculateConversionByDate(bqData, logsBoton, logsIntro, encuestaUUIDs, dateGrouping, subSegFilter),
@@ -306,16 +308,20 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Gráfico por comercial */}
+              {/* Gráfico histórico por líder */}
               <OwnerChart
                 rows={detailRows}
-                selectedOwner={ownerFilter}
-                onOwnerClick={(owner) => setOwnerFilter(owner || null)}
+                dateGrouping={dateGrouping}
+                onBarClick={(uuids, label) => {
+                  setLeaderBarUUIDs(uuids ?? null);
+                  setLeaderBarLabel(label ?? "");
+                  if (uuids) setActiveTab(0);
+                }}
               />
 
               {/* Tabla con filtros activos */}
               <div>
-                {(funnelFilter || ownerFilter) && (
+                {(funnelFilter || leaderBarUUIDs) && (
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <span className="text-sm text-zinc-500 dark:text-zinc-400">
                       Filtrando:
@@ -328,10 +334,10 @@ export default function Dashboard() {
                         </button>
                       </span>
                     )}
-                    {ownerFilter && (
+                    {leaderBarUUIDs && (
                       <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 font-medium">
-                        {ownerFilter}
-                        <button onClick={() => setOwnerFilter(null)} className="ml-0.5 hover:text-violet-900">
+                        {leaderBarLabel}
+                        <button onClick={() => { setLeaderBarUUIDs(null); setLeaderBarLabel(""); }} className="ml-0.5 hover:text-violet-900">
                           <X className="h-3 w-3" />
                         </button>
                       </span>

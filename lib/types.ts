@@ -20,6 +20,7 @@ export interface DetailRow {
   cellphone: string;
   dealname: string;
   deal_uuid: string;
+  fecha_ofertado: string;
   template_id: string;
   mensajes_exitosos: number;
   abrieron_pagina: boolean;
